@@ -207,7 +207,5 @@ class Message:
         response = self._create_response_json_content()
         
         message = self._create_message(**response)
-        print("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
-        print(message)
         self.response_created = True
         self._send_buffer += message

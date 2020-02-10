@@ -4,7 +4,7 @@ import sys
 import socket
 import selectors
 import traceback
-
+import tools
 import libserver
 
 sel = selectors.DefaultSelector()
@@ -29,6 +29,9 @@ print("listening on", (host, port))
 lsock.setblocking(False)
 sel.register(lsock, selectors.EVENT_READ, data=None)
 
+print("starting client")
+tools.startClient()
+print("Client Started")
 try:
     while True:
         events = sel.select(timeout=None)
