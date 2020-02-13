@@ -45,8 +45,6 @@ class Message:
         else:
             if data:
                 self._recv_buffer += data
-            else:
-                raise RuntimeError("Peer closed.")
 
     def _write(self):
         if self._send_buffer:

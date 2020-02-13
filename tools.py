@@ -5,10 +5,13 @@ from azure.iot.hub import IoTHubRegistryManager
 from azure.iot.device import IoTHubDeviceClient, Message, MethodResponse
 from azure.iot.hub.protocol.models import ExportImportDevice, AuthenticationMechanism, SymmetricKey
 import threading
+import libclient
+import socket
+import selectors
 
 iothub_connection_str = "HostName=MTreeIOTHub-01.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=hGoPyQiFID7w1ZorfXZdzLiTf/UOc5qpgRDowg+adUk="
 CONNECTION_STRING_CLIENT = "HostName=MTreeIOTHub-01.azure-devices.net;DeviceId=TestSymkeys;SharedAccessKey=x/AdXWMkad4nIrOQa0y5oR5uv4Oga3A1am9clL7o+HA="
-
+sel = selectors.DefaultSelector()
 def registerDeviceOnIotHub(deviceId):
 
     try:
@@ -42,6 +45,63 @@ def startClient():
     device_method_thread.daemon = True
     device_method_thread.start()
 
+def start_connection(host, port, request):
+    addr = (host, port)
+    print("starting connection to", addr)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setblocking(False)
+    sock.connect_ex(addr)
+    events = selectors.EVENT_READ | selectors.EVENT_WRITE
+    message = libclient.Message(sel, sock, addr, request)
+    sel.register(sock, events, data=message)
+
+def sendMessageToDevice(deviceId):
+
+    deviceList = {"b'client1'":9001,"b'client2'":9002}
+    s = socket.socket()          
+  
+    # Define the port on which you want to connect 
+    port = deviceList[deviceId]                
+    print("Connecting to server\n")
+
+    # connect to the server on local computer 
+    s.connect(('127.0.0.1', port)) 
+    print("Connected to server\n")
+    # close the connection 
+    s.close()  
+    print("Closing the server\n")
+
+    # request = dict(
+    #         type="text/json",
+    #         encoding="utf-8",
+    #         content=dict(action=deviceId),
+    #     )
+    # print("\nConnecting on port ",deviceList[deviceId])
+    # start_connection('127.0.0.1', deviceList[deviceId], request)
+    # print("\n Sending message to device{}, on Port{}".format(deviceId, deviceList[deviceId]))
+    # try:
+    #     while True:
+    #         events = sel.select(timeout=1)
+    #         for key, mask in events:
+
+    #             message = key.data
+                
+    #             try:
+    #                 message.process_events(mask)
+    #             except Exception:
+    #                 print(
+    #                     "main: error: exception for",
+    #                     f"{message.addr}:\n{traceback.format_exc()}",
+    #                 )
+    #                 message.close()
+    #         # Check for a socket being monitored to continue.
+    #         if not sel.get_map():
+    #                 break
+    # except KeyboardInterrupt:
+    #     print("caught keyboard interrupt, exiting")
+    # finally:
+    #     sel.close()
+
 
 def device_method_listener(device_client):
     while True:
@@ -52,6 +112,8 @@ def device_method_listener(device_client):
                 payload=method_request.payload
             )
         )
+
+        sendMessageToDevice(method_request.payload)
         if method_request.name == "msg":
             try:
                 MESSAGE = int(method_request.payload)
