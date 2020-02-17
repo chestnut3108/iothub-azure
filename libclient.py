@@ -20,6 +20,7 @@ class Message:
 
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
+        print("Mode of request is ", mode)
         if mode == "r":
             events = selectors.EVENT_READ
         elif mode == "w":

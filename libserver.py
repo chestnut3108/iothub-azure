@@ -87,9 +87,8 @@ class Message:
         return message
 
     def _create_response_json_content(self):
-        print("actionnnnnn",self.request)
-        
-        tools.registerDeviceOnIotHub(str(self.request))
+        deviceId = self.request.decode("utf-8")
+        tools.registerDeviceOnIotHub(deviceId)
         
         content_encoding = "utf-8"
         response = {

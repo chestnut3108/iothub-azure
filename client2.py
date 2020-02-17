@@ -10,18 +10,12 @@ sel = selectors.DefaultSelector()
 
 
 def create_request(action):
-    if action == "search":
-        return dict(
-            type="text/json",
-            encoding="utf-8",
-            content=dict(action=action),
-        )
-    else:
-        return dict(
-            type="binary/custom-client-binary-type",
-            encoding="binary",
-            content=bytes(action , encoding="utf-8"),
-        )
+    
+    return dict(
+        type="binary/custom-client-binary-type",
+        encoding="binary",
+        content=bytes(action , encoding="utf-8")
+    )
 
 
 def start_connection(host, port, request):
@@ -62,17 +56,13 @@ try:
     while True:
         events = sel.select(timeout=1)
         for key, mask in events:
-
             message = key.data
             if message!=None:
                 try:
                     message.process_events(mask)
                 except Exception:
-                    print(
-                        "main: error: exception for",
-                        f"{message.addr}:\n{traceback.format_exc()}",
-                    )
                     message.close()
+
         # Check for a socket being monitored to continue.
             else:
                 print("received Message")

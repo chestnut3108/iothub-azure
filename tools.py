@@ -8,10 +8,15 @@ import threading
 import libclient
 import socket
 import selectors
+from datetime import datetime
+import random
+
 
 iothub_connection_str = "HostName=MTreeIOTHub-01.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=hGoPyQiFID7w1ZorfXZdzLiTf/UOc5qpgRDowg+adUk="
 CONNECTION_STRING_CLIENT = "HostName=MTreeIOTHub-01.azure-devices.net;DeviceId=TestSymkeys;SharedAccessKey=x/AdXWMkad4nIrOQa0y5oR5uv4Oga3A1am9clL7o+HA="
 sel = selectors.DefaultSelector()
+client = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING_CLIENT)
+print ( "IoT Hub device sending periodic messages, press Ctrl-C to exit" )
 def registerDeviceOnIotHub(deviceId):
 
     try:
@@ -37,8 +42,7 @@ def registerDeviceOnIotHub(deviceId):
         print("iothub_registry_manager_sample stopped")
 
 def startClient():
-    client = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING_CLIENT)
-    print ( "IoT Hub device sending periodic messages, press Ctrl-C to exit" )
+    global client
 
     # Start a thread to listen 
     device_method_thread = threading.Thread(target=device_method_listener, args=(client,))
@@ -57,7 +61,7 @@ def start_connection(host, port, request):
 
 def sendMessageToDevice(deviceId):
 
-    deviceList = {"b'client1'":9001,"b'client2'":9002}
+    deviceList = {"client1":9001,"client2":9002}
     s = socket.socket()          
   
     # Define the port on which you want to connect 
@@ -71,37 +75,27 @@ def sendMessageToDevice(deviceId):
     s.close()  
     print("Closing the server\n")
 
-    # request = dict(
-    #         type="text/json",
-    #         encoding="utf-8",
-    #         content=dict(action=deviceId),
-    #     )
-    # print("\nConnecting on port ",deviceList[deviceId])
-    # start_connection('127.0.0.1', deviceList[deviceId], request)
-    # print("\n Sending message to device{}, on Port{}".format(deviceId, deviceList[deviceId]))
-    # try:
-    #     while True:
-    #         events = sel.select(timeout=1)
-    #         for key, mask in events:
+def sendMessageToCloud(deviceId):
+    global client
+    TEMPERATURE = 20.0
+    HUMIDITY = 60
 
-    #             message = key.data
-                
-    #             try:
-    #                 message.process_events(mask)
-    #             except Exception:
-    #                 print(
-    #                     "main: error: exception for",
-    #                     f"{message.addr}:\n{traceback.format_exc()}",
-    #                 )
-    #                 message.close()
-    #         # Check for a socket being monitored to continue.
-    #         if not sel.get_map():
-    #                 break
-    # except KeyboardInterrupt:
-    #     print("caught keyboard interrupt, exiting")
-    # finally:
-    #     sel.close()
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
 
+    temperature = TEMPERATURE + (random.random() * 15)
+    humidity = HUMIDITY + (random.random() * 20)
+
+    msg_txt_formatted = dict(
+        temperature=temperature,
+        humidity=humidity,
+        deviceId=deviceId,
+        timestamp = current_time 
+    )
+    message = Message(str(msg_txt_formatted))
+    client.send_message(message)
+    print("Sending message to IOT-Cloud",msg_txt_formatted)
+    
 
 def device_method_listener(device_client):
     while True:
@@ -114,6 +108,8 @@ def device_method_listener(device_client):
         )
 
         sendMessageToDevice(method_request.payload)
+
+        sendMessageToCloud(method_request.payload)
         if method_request.name == "msg":
             try:
                 MESSAGE = int(method_request.payload)
