@@ -6,10 +6,16 @@ import os
 from azure.iot.hub import IoTHubRegistryManager
 from azure.iot.hub.protocol.models import ExportImportDevice, AuthenticationMechanism, SymmetricKey,QuerySpecification
 import util
+import event
+import threading
+import redis
+
+
+redisClient = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 class ItemTable(Table):
     device_id = Col('device_id')
-    authentication = LinkCol('authentication','hey',url_kwargs=dict(device_id ='device_id')   )
+    authentication = LinkCol('Poll Device','hey',url_kwargs=dict(device_id ='device_id')   )
 
 
 iothub_connection_str = "HostName=MTreeIOTHub-01.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=hGoPyQiFID7w1ZorfXZdzLiTf/UOc5qpgRDowg+adUk="
@@ -38,8 +44,17 @@ def hello_world():
 
 @app.route('/hey')
 def hey():
-	util.cloudToDeviceMessage(request.args.get('device_id'))
-	return "Message send to " + request.args.get('device_id')
+	deviceId =  request.args.get('device_id')
+	util.cloudToDeviceMessage(deviceId)
 
+	result = []
+
+	while(redisClient.llen(deviceId)!=0):
+		result.append(redisClient.lpop(deviceId))
+
+	return "Message send to " + deviceId + " result is " + str(result)
+ 
 if __name__ == '__main__':
-   app.run()
+	x = threading.Thread(target=event.startEventHub, args=(), daemon=True)
+	x.start()
+	app.run()
