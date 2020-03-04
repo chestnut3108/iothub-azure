@@ -3,7 +3,7 @@ import sys
 import os
 from azure.iot.hub import IoTHubRegistryManager
 from azure.iot.device import IoTHubDeviceClient, Message, MethodResponse
-from azure.iot.hub.protocol.models import ExportImportDevice, AuthenticationMechanism, SymmetricKey
+from azure.iot.hub.protocol.models import ExportImportDevice, AuthenticationMechanism, SymmetricKey,TwinProperties
 import threading
 import libclient
 import socket
@@ -27,7 +27,7 @@ def registerDeviceOnIotHub(deviceId):
         secondary_key1 = "111222333444555666777888999000aaabbbcccdddee"
         symmetric_key1 = SymmetricKey(primary_key=primary_key1, secondary_key=secondary_key1)
         authentication1 = AuthenticationMechanism(type="sas", symmetric_key=symmetric_key1)
-        device1 = ExportImportDevice(id=deviceId, status="enabled", authentication=authentication1)
+        device1 = ExportImportDevice(id=deviceId, status="enabled",tags={'parent':"testSymKeys"}, authentication=authentication1)
 
         # Create devices
         device1.import_mode = "create"

@@ -65,7 +65,7 @@ try:
 
         # Check for a socket being monitored to continue.
             else:
-                print("received Message")
+                print("received Message from gateway")
                 accept_wrapper(key.fileobj)
         if not sel.get_map():
             break
