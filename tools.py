@@ -28,7 +28,7 @@ def registerDeviceOnIotHub(deviceId,coordinatorName):
         symmetric_key1 = SymmetricKey(primary_key=primary_key1, secondary_key=secondary_key1)
         authentication1 = AuthenticationMechanism(type="sas", symmetric_key=symmetric_key1)
         device1 = ExportImportDevice(id=deviceId, status="enabled",tags={'parent':coordinatorName}, authentication=authentication1)
-
+        print("registering device {} with coordinator {}".format(deviceId,coordinatorName))
         # Create devices
         device1.import_mode = "create"
 
@@ -43,7 +43,7 @@ def registerDeviceOnIotHub(deviceId,coordinatorName):
 
 def startClient(coordinatorName):
     global client
-    CONNECTION_STRING_CLIENT = "HostName=MTreeIOTHub-01.azure-devices.net;DeviceId="+  coordinatorName+";SharedAccessKey=x/AdXWMkad4nIrOQa0y5oR5uv4Oga3A1am9clL7o+HA="
+    CONNECTION_STRING_CLIENT = "HostName=MTreeIOTHub-01.azure-devices.net;DeviceId="+  str(coordinatorName)+";SharedAccessKey=aaabbbcccdddeeefffggghhhiiijjjkkklllmmmnnnoo"
 
     client = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING_CLIENT)
     # Start a thread to listen 

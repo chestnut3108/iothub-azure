@@ -8,6 +8,7 @@ from tools import registerDeviceOnIotHub,startClient
 from config import GatewayConfig
 
 
+
 COORDINATOR_NAME = "Factory"
 
 
@@ -16,7 +17,7 @@ startClient(COORDINATOR_NAME)
 print("Client Started")
 
 COORDINATOR_PORT = GatewayConfig[COORDINATOR_NAME]
-print("Started Coordinator device "+COORDINATOR_NAME + " listening at port " + COORDINATOR_PORT)
+print("Started Coordinator device "+COORDINATOR_NAME + " listening at port " , COORDINATOR_PORT)
 
 
 s = socket.socket()
@@ -26,5 +27,6 @@ while True:
     c, addr = s.accept()      
     deviceId = c.recv(1024).decode()
     if deviceId:
+        print("deviceid received ", deviceId)
         registerDeviceOnIotHub(deviceId, COORDINATOR_NAME)
     c.close()
