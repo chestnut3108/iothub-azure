@@ -16,21 +16,21 @@ from builtins import input
 # Using the Azure CLI:
 # az iot hub show-connection-string --hub-name {your iot hub name} --policy-name service
 CONNECTION_STRING = "HostName=MTreeIOTHub-01.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=90sXWB+qLp466vKN1q7VONGxkcpVO7eHS0BNTIMyR+M="
-DEVICE_ID = "TestSymkeys"
+
 
 # Details of the direct method to call.
 METHOD_NAME = "msg"
 
 
 
-def cloudToDeviceMessage(payloadDeviceId):
+def cloudToDeviceMessage(payloadDeviceId, coordinator):
 	try:
 		# Create IoTHubRegistryManager
 				# Create IoTHubRegistryManager
 		registry_manager = IoTHubRegistryManager(CONNECTION_STRING)
 		# Call the direct method.
 		deviceMethod = CloudToDeviceMethod(method_name=METHOD_NAME, payload=payloadDeviceId)
-		registry_manager.invoke_device_method(DEVICE_ID, deviceMethod)
+		registry_manager.invoke_device_method(coordinator, deviceMethod)
 
 		print ( "" )
 		print ( "Device Method called" )
@@ -38,7 +38,6 @@ def cloudToDeviceMessage(payloadDeviceId):
 		print ( "Device Method payload    : {0}".format(payloadDeviceId) )
 		print ( "" )
 
-		input("Press Enter to continue...\n")
 
 	except Exception as ex:
 		print ( "" )

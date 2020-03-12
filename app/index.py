@@ -15,7 +15,8 @@ redisClient = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 class ItemTable(Table):
     device_id = Col('device_id')
-    authentication = LinkCol('Poll Device','hey',url_kwargs=dict(device_id ='device_id')   )
+    coordinator = Col('coordinator')
+    authentication = LinkCol('Poll Device','hey',url_kwargs=dict(device_id ='device_id',coordinator = 'coordinator')   )
 
 
 iothub_connection_str = "HostName=MTreeIOTHub-01.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=hGoPyQiFID7w1ZorfXZdzLiTf/UOc5qpgRDowg+adUk="
@@ -23,7 +24,22 @@ iothub_connection_str = "HostName=MTreeIOTHub-01.azure-devices.net;SharedAccessK
 def getDevices():
 	iothub_registry_manager = IoTHubRegistryManager(iothub_connection_str)
 	listOfDevices = iothub_registry_manager.get_devices(100)
-	return listOfDevices
+	deviceInfoList = []
+	for device in listOfDevices:
+		deviceInfo = {}
+		deviceId = device.as_dict().get('device_id')
+		deviceInfo["device_id"] = deviceId
+		twin = iothub_registry_manager.get_twin(device_id=deviceId)
+		try:
+			deviceInfo["coordinator"] = twin.properties.desired["coordinator"]
+		
+		except KeyError:
+			deviceInfo["coordinator"] = "Not a device"
+
+		finally:
+			deviceInfoList.append(deviceInfo)
+	
+	return deviceInfoList
 
 def getDeviceId():
 	device = getDevices()
@@ -36,16 +52,16 @@ def getDeviceId():
 @app.route('/')
 def hello_world():
 	devices = getDevices()
-	items = [device.as_dict() for device in devices]
 	#deviceIDs = getDeviceId()
-	table = ItemTable(items)
+	table = ItemTable(devices)
 	return table.__html__()
 
 
 @app.route('/hey')
 def hey():
 	deviceId =  request.args.get('device_id')
-	util.cloudToDeviceMessage(deviceId)
+	coordinator =  request.args.get('coordinator')
+	util.cloudToDeviceMessage(deviceId,coordinator)
 
 	result = []
 
