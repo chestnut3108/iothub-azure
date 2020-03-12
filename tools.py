@@ -3,7 +3,7 @@ import sys
 import os
 from azure.iot.hub import IoTHubRegistryManager
 from azure.iot.device import IoTHubDeviceClient, Message, MethodResponse
-from azure.iot.hub.protocol.models import ExportImportDevice, AuthenticationMechanism, SymmetricKey,TwinProperties
+from azure.iot.hub.protocol.models import ExportImportDevice, AuthenticationMechanism, SymmetricKey,Twin,TwinProperties
 import threading
 import socket
 import selectors
@@ -27,12 +27,22 @@ def registerDeviceOnIotHub(deviceId,coordinatorName):
         secondary_key1 = "111222333444555666777888999000aaabbbcccdddee"
         symmetric_key1 = SymmetricKey(primary_key=primary_key1, secondary_key=secondary_key1)
         authentication1 = AuthenticationMechanism(type="sas", symmetric_key=symmetric_key1)
-        device1 = ExportImportDevice(id=deviceId, status="enabled",tags={'parent':coordinatorName}, authentication=authentication1)
+        device1 = ExportImportDevice(id=deviceId, status="enabled", authentication=authentication1)
+        print("registering device {}".format(deviceId))
+
         print("registering device {} with coordinator {}".format(deviceId,coordinatorName))
         # Create devices
         device1.import_mode = "create"
 
         iothub_registry_manager.bulk_create_or_update_devices([device1])
+        print("registered device {} on Iot-hub".format(deviceId))
+
+        #Updating the device twin on iot-hub
+        twin = iothub_registry_manager.get_twin(device_id=deviceId)
+        twin_patch = Twin()
+        twin_patch.properties = TwinProperties(desired={"coordinator": coordinatorName})
+        twin = iothub_registry_manager.update_twin(deviceId, twin_patch, twin.etag)
+
 
         
 

@@ -37,8 +37,6 @@ def cloudToDeviceMessage(payloadDeviceId):
 		print ( "Device Method name       : {0}".format(METHOD_NAME) )
 		print ( "Device Method payload    : {0}".format(payloadDeviceId) )
 		print ( "" )
-		print ( "Response status          : {0}".format(response.status) )
-		print ( "Response payload         : {0}".format(response.payload) )
 
 		input("Press Enter to continue...\n")
 

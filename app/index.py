@@ -37,7 +37,7 @@ def getDeviceId():
 def hello_world():
 	devices = getDevices()
 	items = [device.as_dict() for device in devices]
-	deviceIDs = getDeviceId()
+	#deviceIDs = getDeviceId()
 	table = ItemTable(items)
 	return table.__html__()
 

@@ -12,8 +12,7 @@ EVENTHUB_NAME = "iothub-ehub-mtreeiothu-2509244-fcc32d6a4d"
 redisClient = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 async def on_event(partition_context, event):
-    # Put your code here.
-    # If the operation is i/o intensive, async will have better performance.
+    
     print("Received event from partition: {}.".format(partition_context.partition_id))
     event_body = event.body_as_str().replace("\'","\"")
     deviceId = json.loads(event_body).get("deviceId")
